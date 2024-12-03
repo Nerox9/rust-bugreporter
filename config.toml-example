@@ -1,0 +1,9 @@
+[window]
+default_width = 400
+default_height = 200
+application_id = "com.example.bug-reporter"
+
+[github]
+token = "xxxxxxxxxxxxxxxxxxxx"
+owner = "yyyyy"
+repo = "zzzzzz"
