@@ -6,6 +6,7 @@ pub struct WizardData {
     pub description: String,
     pub current_step: usize,
     pub attachment: Option<(String, Vec<u8>)>, // (filename, data)
+    pub message: String,
 }
 
 impl Default for WizardData {
@@ -16,6 +17,7 @@ impl Default for WizardData {
             description: String::new(),
             current_step: 0,
             attachment: None,
+            message: String::new(),
         }
     }
 }

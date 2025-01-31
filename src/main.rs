@@ -3,6 +3,7 @@ mod github;
 mod wizard;
 
 use adw::prelude::*;
+use github::{test, wait};
 use gtk::glib;
 use base64::Engine;
 use adw::{Application, ApplicationWindow as AdwApplicationWindow};
@@ -10,6 +11,8 @@ use gtk::{Button, Entry, Label, Orientation, TextView, Picture};
 use gtk::Box as GtkBox;
 use hostname;
 use mac_address::get_mac_address;
+use octocrab::auth::DeviceCodes;
+use octocrab::Octocrab;
 use crate::{
     config::{SETTINGS, load_config},
     wizard::WizardData,
@@ -145,10 +148,11 @@ fn build_ui(app: &Application) {
                     entry_clone.set_text(&data.name);
                     back_button.set_sensitive(false);
                     next_button.set_label("Next");
+                    println!("HERE maybe??!!1");
                 }
                 1 => {
                     step_label.set_text("Step 2 of 3: Enter Your Email");
-                    entry_clone.set_text(&data.email);
+                    entry_clone.set_text(&data.name);
                     back_button.set_sensitive(true);
                     next_button.set_label("Next");
                 }
@@ -162,6 +166,7 @@ fn build_ui(app: &Application) {
                 }
                 3 => {
                     // Final summary screen
+                    println!("HERE maybe??!!");
                     back_button.set_visible(false);
                     next_button.set_label("Quit");
                     next_button.set_visible(true);
@@ -175,7 +180,7 @@ fn build_ui(app: &Application) {
                     );
                     
                     // Configure and show status label
-                    status_label.set_text(&summary_text);
+                    status_label.set_text(&data.name);
                     status_label.set_visible(true);
                     
                     // Configure and show status label first
@@ -272,6 +277,7 @@ fn build_ui(app: &Application) {
         let back_button = back_button.clone();
         let next_button = next_button.clone();
 
+
         move || {
             let mut data = wizard_data.borrow_mut();
             let current_text = if data.current_step == 2 {
@@ -286,10 +292,34 @@ fn build_ui(app: &Application) {
                         status_label.set_text("Please enter your name");
                         return;
                     }
-                    data.name = current_text;
-                    data.current_step += 1;
+                    
+                    let mut code: String = String::new();
+                    let rt = tokio::runtime::Runtime::new().unwrap();
+                    println!("TEST");
+                    /*let auth_task = mitosis::spawn(counter, |counter| {
+                        test(&counter);
+                    });*/
+                    match rt.block_on(test()) {
+                        Ok(c) => {
+                            code = c;
+                        },
+                        Err(_e) => {}
+                    };
+                    println!("After Test");
+                    
+                    data.name = code;
+                    data.current_step = 1;
                 }
                 1 => {
+                    
+                    let rt = tokio::runtime::Runtime::new().unwrap();
+                    println!("HEllooWWAIT!!!");
+                    match rt.block_on(wait()) {
+                        Ok(_) => {
+                        },
+                        Err(e) => {println!("{}",e);}
+                    };
+                    println!("After HEllooWWAIT!!!");
                     if !current_text.contains('@') {
                         status_label.set_text("Please enter a valid email");
                         return;
